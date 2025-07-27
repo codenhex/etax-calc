@@ -19,13 +19,15 @@ const BangladeshTaxFilingSystem = () => {
     });
 
     const [investments, setInvestments] = useState({
-        recognizedProvidentFund: 0,
-        dps: 0,
         lifeInsurance: 0,
+        providentFund: 0,
+        superannuationFund: 0,
+        dps: 0,
+        mutualFunds: 0,
         govtSecurities: 0,
-        stockMarket: 0,
-        zakat: 0,
-        donation: 0
+        listedStocks: 0,
+        sanchaypatra: 0,
+        donations: 0,
     });
 
     const [taxDeductedAtSource, setTaxDeductedAtSource] = useState(0);
@@ -111,9 +113,21 @@ const BangladeshTaxFilingSystem = () => {
     };
 
     const calculateTotalInvestment = () => {
-        const maxInvestmentRebate = Math.min(calculateTotalIncome() * 0.25, 1500000);
-        const totalInvestments = Object.values(investments).reduce((sum, value) => sum + value, 0);
-        return Math.min(totalInvestments, maxInvestmentRebate);
+        const totalInvestments = Object.entries(investments).reduce((sum, [key, value]) => {
+            switch(key){
+                case "dps":
+                    return sum + Math.min(value, 120000);
+                case "mutualFunds":
+                    return sum + Math.min(value, 500000);
+                case "govtSecurities":
+                    return sum + Math.min(value, 500000);
+                case "sanchaypatra":
+                    return sum + Math.min(value, 500000);
+                default:
+                    return sum + value;
+            }
+        }, 0);
+        return Math.max(totalInvestments, 0);
     };
 
     const calculateTaxFreeIncome = () => {
@@ -128,6 +142,17 @@ const BangladeshTaxFilingSystem = () => {
         const taxFreeIncome = calculateTaxFreeIncome();
         return Math.max(0, totalIncome - taxFreeIncome);
     };
+
+    const calculate3PercentOfIncome = () => {
+        let taxableIncome = calculateTaxableIncome();
+        taxableIncome = Math.min(taxableIncome, 1000000);
+        return Math.max(0, taxableIncome / 100 * 3);
+    }
+
+    const calculateInvestmentForMaxRebate = () => {
+        let posibleRebate = calculate3PercentOfIncome();
+        return posibleRebate * 100 / 15;
+    }
 
     const calculateTax = () => {
         const taxableIncome = calculateTaxableIncome();
@@ -190,7 +215,7 @@ const BangladeshTaxFilingSystem = () => {
     };
 
     const calculateInvestmentRebate = () => {
-        return calculateTotalInvestment() * 0.15; // 15% rebate on investment
+        return Math.min(calculateTotalInvestment() * 0.15, calculate3PercentOfIncome()); // 15% rebate on investment
     };
 
     const calculateNetTaxPayable = () => {
@@ -399,17 +424,37 @@ const BangladeshTaxFilingSystem = () => {
 
                     <div className="space-y-3">
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Recognized Provident Fund</label>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Life Insurance</label>
                             <input
                                 type="number"
-                                value={investments.recognizedProvidentFund}
-                                onChange={(e) => handleInvestmentChange('recognizedProvidentFund', e.target.value)}
+                                value={investments.lifeInsurance}
+                                onChange={(e) => handleInvestmentChange('lifeInsurance', e.target.value)}
                                 className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-purple-500"
                             />
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">DPS/Fixed Deposit</label>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Provident Fund</label>
+                            <input
+                                type="number"
+                                value={investments.providentFund}
+                                onChange={(e) => handleInvestmentChange('providentFund', e.target.value)}
+                                className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-purple-500"
+                            />
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Superannuation Fund</label>
+                            <input
+                                type="number"
+                                value={investments.superannuationFund}
+                                onChange={(e) => handleInvestmentChange('superannuationFund', e.target.value)}
+                                className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-purple-500"
+                            />
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">DPS</label>
                             <input
                                 type="number"
                                 value={investments.dps}
@@ -419,11 +464,11 @@ const BangladeshTaxFilingSystem = () => {
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Life Insurance Premium</label>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Mutual Funds</label>
                             <input
                                 type="number"
-                                value={investments.lifeInsurance}
-                                onChange={(e) => handleInvestmentChange('lifeInsurance', e.target.value)}
+                                value={investments.mutualFunds}
+                                onChange={(e) => handleInvestmentChange('mutualFunds', e.target.value)}
                                 className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-purple-500"
                             />
                         </div>
@@ -442,18 +487,18 @@ const BangladeshTaxFilingSystem = () => {
                             <label className="block text-sm font-medium text-gray-700 mb-1">Stock Market Investment</label>
                             <input
                                 type="number"
-                                value={investments.stockMarket}
-                                onChange={(e) => handleInvestmentChange('stockMarket', e.target.value)}
+                                value={investments.listedStocks}
+                                onChange={(e) => handleInvestmentChange('listedStocks', e.target.value)}
                                 className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-purple-500"
                             />
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Zakat Payment</label>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Sanchaypatra</label>
                             <input
                                 type="number"
-                                value={investments.zakat}
-                                onChange={(e) => handleInvestmentChange('zakat', e.target.value)}
+                                value={investments.sanchaypatra}
+                                onChange={(e) => handleInvestmentChange('sanchaypatra', e.target.value)}
                                 className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-purple-500"
                             />
                         </div>
@@ -462,8 +507,8 @@ const BangladeshTaxFilingSystem = () => {
                             <label className="block text-sm font-medium text-gray-700 mb-1">Charitable Donation</label>
                             <input
                                 type="number"
-                                value={investments.donation}
-                                onChange={(e) => handleInvestmentChange('donation', e.target.value)}
+                                value={investments.donations}
+                                onChange={(e) => handleInvestmentChange('donations', e.target.value)}
                                 className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-purple-500"
                             />
                         </div>
@@ -478,6 +523,82 @@ const BangladeshTaxFilingSystem = () => {
                                 placeholder="Enter tax already deducted by employer"
                             />
                             <p className="text-xs text-gray-500 mt-1">Tax already paid through salary deduction</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* Detailed Tax Slab Calculation */}
+            <div className="mt-8 bg-blue-50 p-6 rounded-lg">
+                <h3 className="text-xl font-semibold text-blue-800 mb-4">
+                    Detailed Tax Slab Calculation
+                </h3>
+                <div className="overflow-x-auto">
+                    <table className="w-full border-collapse border border-blue-300">
+                        <thead>
+                        <tr className="bg-blue-200">
+                            <th className="border border-blue-300 p-2 text-left">Slabs</th>
+                            <th className="border border-blue-300 p-2 text-left">Max Amount</th>
+                            <th className="border border-blue-300 p-2 text-left">Rest Income</th>
+                            <th className="border border-blue-300 p-2 text-left">%</th>
+                            <th className="border border-blue-300 p-2 text-left">Selected Amount</th>
+                            <th className="border border-blue-300 p-2 text-left">Slab Deducted Earning</th>
+                            <th className="border border-blue-300 p-2 text-left">Tax</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {getDetailedTaxCalculation().details.map((detail, index) => (
+                            <tr key={index} className="hover:bg-blue-100">
+                                <td className="border border-blue-300 p-2">{detail.slabNo}{detail.slabNo === 1 ? 'st' : detail.slabNo === 2 ? 'nd' : detail.slabNo === 3 ? 'rd' : 'th'}</td>
+                                <td className="border border-blue-300 p-2">৳ {detail.maxAmount.toLocaleString()}</td>
+                                <td className="border border-blue-300 p-2">৳ {detail.restIncome.toLocaleString()}</td>
+                                <td className="border border-blue-300 p-2">{detail.rate}%</td>
+                                <td className="border border-blue-300 p-2">৳ {detail.selectedAmount.toLocaleString()}</td>
+                                <td className="border border-blue-300 p-2">৳ {detail.slabDeductedEarning.toLocaleString()}</td>
+                                <td className="border border-blue-300 p-2">৳ {detail.tax.toLocaleString()}</td>
+                            </tr>
+                        ))}
+                        <tr className="bg-blue-200 font-semibold">
+                            <td className="border border-blue-300 p-2" colSpan="6">Total</td>
+                            <td className="border border-blue-300 p-2">৳ {getDetailedTaxCalculation().totalTax.toLocaleString()}</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            {/* Tax Rebate Calculation */}
+            <div className="mt-8 bg-gray-50 p-6 rounded-lg">
+                <h2 className="text-2xl font-semibold text-gray-800 mb-6 flex items-center">
+                    <Calculator className="mr-2" size={24} />
+                    Tax Rebate Calculation
+                </h2>
+
+                <div className="grid grid-cols-1 gap-6">
+                    <div className="space-y-4">
+                        <div className="flex justify-between items-center py-2 border-b">
+                            <span className="font-medium">Taxable Income:</span>
+                            <span className="text-orange-600 font-semibold">৳ {calculateTaxableIncome().toLocaleString()}</span>
+                        </div>
+
+                        <div className="flex justify-between items-center py-2 border-b">
+                            <span className="font-medium">Max rebate from taxable income (3% of Taxable Income upto 1000000):</span>
+                            <span className="text-blue-600 font-semibold">৳ {calculate3PercentOfIncome().toLocaleString()}</span>
+                        </div>
+
+                        <div className="flex justify-between items-center py-2 border-b">
+                            <span className="font-medium">Invest amount to get MAX rebate:</span>
+                            <span className="text-blue-600 font-semibold">৳ {calculateInvestmentForMaxRebate().toLocaleString()}</span>
+                        </div>
+
+                        <div className="flex justify-between items-center py-2 border-b">
+                            <span className="font-medium">Total Rebatable Investment:</span>
+                            <span className="text-purple-600 font-semibold">৳ {calculateTotalInvestment().toLocaleString()}</span>
+                        </div>
+
+                        <div className="flex justify-between items-center py-2 border-b">
+                            <span className="font-medium">Investment Rebate (15% of Rebatable Investment upto Max Rebate):</span>
+                            <span className="text-green-600 font-semibold">৳ {calculateInvestmentRebate().toLocaleString()}</span>
                         </div>
                     </div>
                 </div>
@@ -562,74 +683,6 @@ const BangladeshTaxFilingSystem = () => {
                             </p>
                         </div>
                     </div>
-                </div>
-            </div>
-
-            {/* Detailed Tax Slab Calculation */}
-            <div className="mt-8 bg-blue-50 p-6 rounded-lg">
-                <h3 className="text-xl font-semibold text-blue-800 mb-4">
-                    Detailed Tax Slab Calculation
-                </h3>
-                <div className="overflow-x-auto">
-                    <table className="w-full border-collapse border border-blue-300">
-                        <thead>
-                        <tr className="bg-blue-200">
-                            <th className="border border-blue-300 p-2 text-left">Slabs</th>
-                            <th className="border border-blue-300 p-2 text-left">Max Amount</th>
-                            <th className="border border-blue-300 p-2 text-left">Rest Income</th>
-                            <th className="border border-blue-300 p-2 text-left">%</th>
-                            <th className="border border-blue-300 p-2 text-left">Selected Amount</th>
-                            <th className="border border-blue-300 p-2 text-left">Slab Deducted Earning</th>
-                            <th className="border border-blue-300 p-2 text-left">Tax</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        {getDetailedTaxCalculation().details.map((detail, index) => (
-                            <tr key={index} className="hover:bg-blue-100">
-                                <td className="border border-blue-300 p-2">{detail.slabNo}{detail.slabNo === 1 ? 'st' : detail.slabNo === 2 ? 'nd' : detail.slabNo === 3 ? 'rd' : 'th'}</td>
-                                <td className="border border-blue-300 p-2">৳ {detail.maxAmount.toLocaleString()}</td>
-                                <td className="border border-blue-300 p-2">৳ {detail.restIncome.toLocaleString()}</td>
-                                <td className="border border-blue-300 p-2">{detail.rate}%</td>
-                                <td className="border border-blue-300 p-2">৳ {detail.selectedAmount.toLocaleString()}</td>
-                                <td className="border border-blue-300 p-2">৳ {detail.slabDeductedEarning.toLocaleString()}</td>
-                                <td className="border border-blue-300 p-2">৳ {detail.tax.toLocaleString()}</td>
-                            </tr>
-                        ))}
-                        <tr className="bg-blue-200 font-semibold">
-                            <td className="border border-blue-300 p-2" colSpan="6">Total</td>
-                            <td className="border border-blue-300 p-2">৳ {getDetailedTaxCalculation().totalTax.toLocaleString()}</td>
-                        </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            {/* Tax Slab Information */}
-            <div className="mt-8 bg-green-50 p-6 rounded-lg">
-                <h3 className="text-xl font-semibold text-green-800 mb-4">
-                    Applicable Tax Slabs ({taxpayerType} - {gender})
-                </h3>
-                <div className="overflow-x-auto">
-                    <table className="w-full border-collapse border border-green-300">
-                        <thead>
-                        <tr className="bg-green-200">
-                            <th className="border border-green-300 p-2 text-left">Income Range (BDT)</th>
-                            <th className="border border-green-300 p-2 text-left">Tax Rate</th>
-                            <th className="border border-green-300 p-2 text-left">Max Amount</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        {taxSlabs[taxpayerType][gender].map((slab, index) => (
-                            <tr key={index} className="hover:bg-green-100">
-                                <td className="border border-green-300 p-2">
-                                    ৳ {slab.min.toLocaleString()} - {slab.max === Infinity ? 'Above' : `৳ ${slab.max.toLocaleString()}`}
-                                </td>
-                                <td className="border border-green-300 p-2">{slab.rate}%</td>
-                                <td className="border border-green-300 p-2">৳ {slab.maxAmount === Infinity ? 'No Limit' : slab.maxAmount.toLocaleString()}</td>
-                            </tr>
-                        ))}
-                        </tbody>
-                    </table>
                 </div>
             </div>
 
