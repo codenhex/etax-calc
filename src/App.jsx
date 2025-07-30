@@ -145,7 +145,6 @@ const BangladeshTaxFilingSystem = () => {
 
     const calculate3PercentOfIncome = () => {
         let taxableIncome = calculateTaxableIncome();
-        taxableIncome = Math.min(taxableIncome, 1000000);
         return Math.max(0, taxableIncome / 100 * 3);
     }
 
